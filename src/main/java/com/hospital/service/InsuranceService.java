@@ -10,15 +10,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class InsuranceService {
 
     private final InsuranceRepository insuranceRepository;
     private final PatientRepository patientRepository;
 
-    public InsuranceService(InsuranceRepository insuranceRepository, PatientRepository patientRepository) {
-        this.insuranceRepository = insuranceRepository;
-        this.patientRepository = patientRepository;
-    }
+//    public InsuranceService() {
+//        this.insuranceRepository = null;
+//        this.patientRepository = null;
+//    }
 
     @Transactional
     public Patient assignInsuranceToPatient(Insurance insurance, Long patientId) {
@@ -32,12 +33,15 @@ public class InsuranceService {
     }
     @Transactional
     public Patient disaccociateInsuranceFromPatient(Long patientId) {
-
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: "+patientId));
 
                 patient.setInsurance(null);
                 return patient;
+    }
+
+    public InsuranceRepository getInsuranceRepository() {
+        return insuranceRepository;
     }
 }
 

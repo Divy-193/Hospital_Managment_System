@@ -2,6 +2,7 @@ package com.hospital.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-
+@Builder
 @NoArgsConstructor
 public class Insurance {
 
@@ -42,7 +43,6 @@ public class Insurance {
 
     @OneToOne(mappedBy = "insurance")
     private Patient patient;
-
 
     public Long getId() {
         return id;

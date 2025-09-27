@@ -1,57 +1,71 @@
 package com.hospital.service;
 
+import com.hospital.dto.AppointmentResponseDto;
+import com.hospital.dto.CreateAppointmentRequestDto;
 import com.hospital.entity.Appointment;
 import com.hospital.entity.Doctor;
 import com.hospital.entity.Patient;
 import com.hospital.repository.AppointmentRepository;
 import com.hospital.repository.DoctorRepository;
 import com.hospital.repository.PatientRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-@Service
+import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class AppointmentService {
 
-
     private final AppointmentRepository appointmentRepository;
-    private  final DoctorRepository doctorRepository;
-    private  final PatientRepository patientRepository;
-
-
-    public AppointmentService(AppointmentRepository appointmentRepository,
-                              DoctorRepository doctorRepository,
-                              PatientRepository patientRepository)
-    {
-        this.appointmentRepository = appointmentRepository;
-        this.doctorRepository = doctorRepository;
-        this.patientRepository = patientRepository;
-    }
-
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
+    private final ModelMapper modelMapper;
 
     @Transactional
-    public Appointment createNewAppointment(Appointment appointment, Long doctorId, Long patientId){
+    public AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
+        Long doctorId = createAppointmentRequestDto.getDoctorId();
+        Long patientId = createAppointmentRequestDto.getPatientId();
 
-        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
-        Patient patient = patientRepository.findById(patientId).orElseThrow();
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
 
-        if(appointment.getId() != null) throw new IllegalArgumentException("Appointment should not have been arranged");
+        Appointment appointment = Appointment.builder()
+                .reason(createAppointmentRequestDto.getReason())
+                .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
+                .build();
 
-        appointment.setDoctor(doctor);
         appointment.setPatient(patient);
+        appointment.setDoctor(doctor);
+        patient.getAppointments().add(appointment); // maintain consistency
 
-       return appointmentRepository.save(appointment);
+        appointment = appointmentRepository.save(appointment);
+        return modelMapper.map(appointment, AppointmentResponseDto.class);
     }
-    @Transactional
-    public Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long doctorId){
 
+    @Transactional
+    public Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long doctorId) {
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow();
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
 
-        appointment.setDoctor(doctor);
+        appointment.setDoctor(doctor); // dirty checking triggers update
+        doctor.getAppointments().add(appointment); // maintain consistency
+
         return appointment;
     }
 
+    public List<AppointmentResponseDto> getAllAppointmentsOfDoctor() {
+        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
+
+        return doctor.getAppointments()
+                .stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentResponseDto.class))
+                .collect(Collectors.toList());
+    }
 }

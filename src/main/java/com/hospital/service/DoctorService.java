@@ -5,7 +5,7 @@ import com.hospital.dto.OnboardDoctorRequestDto;
 import com.hospital.entity.Doctor;
 import com.hospital.repository.DoctorRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
@@ -28,18 +27,11 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional
     public DoctorResponseDto onBoardNewDoctor(OnboardDoctorRequestDto onBoardDoctorRequestDto) {
-
-        if(doctorRepository.existsById(onBoardDoctorRequestDto.getUserId())) {
-            throw new IllegalArgumentException("Already a doctor");
-        }
-
-        Doctor doctor = Doctor.builder()
-                .name(onBoardDoctorRequestDto.getName())
-                .specialization(onBoardDoctorRequestDto.getSpecialization())
-                .build();
+        Doctor doctor = new Doctor();
+        doctor.setName(onBoardDoctorRequestDto.getName());
+        doctor.setSpecialization(onBoardDoctorRequestDto.getSpecialization());
 
         return modelMapper.map(doctorRepository.save(doctor), DoctorResponseDto.class);
     }
