@@ -17,6 +17,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface PatientRepository extends JpaRepository<Patient, Long> {
     Patient findByName(String name);
@@ -33,10 +34,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("select p from Patient p where p.birthDate > :birthDate")
     List<Patient> findByBornAfterDate(@Param("birthDate") LocalDate birthDate);
 
-    @Query("select new com.codingshuttle.youtube.hospitalManagement.dto.BloodGroupCountResponseEntity(p.bloodGroup," +
-            " Count(p)) from Patient p group by p.bloodGroup")
-//    List<Object[]> countEachBloodGroupType();
-    List<BloodGroupCountResponseEntity> countEachBloodGroupType();
+    @Query("SELECT new map(p.bloodGroup as bloodGroup, COUNT(p) as count) FROM Patient p GROUP BY p.bloodGroup")
+    List<Map<String, Object>> countEachBloodGroupType();
 
     @Query(value = "select * from patient", nativeQuery = true)
     Page<Patient> findAllPatients(Pageable pageable);

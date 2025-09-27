@@ -25,6 +25,7 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final ModelMapper modelMapper;
+    private Long doctorId;
 
     @Transactional
     public AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
