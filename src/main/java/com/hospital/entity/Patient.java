@@ -16,6 +16,7 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @CreationTimestamp
@@ -26,6 +27,7 @@ public class Patient {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "blood_group")
     private BloodGroup bloodGroup;
 
     @Column(unique = true, nullable = false)
