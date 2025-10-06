@@ -2,6 +2,7 @@ package com.hospital.controller;
 
 import com.hospital.dto.LoginRequestDto;
 import com.hospital.dto.LoginResponseDto;
+import com.hospital.dto.SignupRequestDto;
 import com.hospital.security.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login (@RequestBody LoginRequestDto loginRequestDto){
-        return ResponseEntity.ok(AuthService.login(loginRequestDto));
+        return ResponseEntity.ok(authService.login(loginRequestDto));
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<SignupRequestDto> signup (@RequestBody LoginRequestDto signupRequestDto) throws IllegalAccessException {
+        return ResponseEntity.ok(authService.signup(signupRequestDto));
     }
 }
